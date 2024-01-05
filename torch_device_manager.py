@@ -25,6 +25,14 @@ class TorchDeviceManager:
         except ImportError:
             return False
 
+    def get_num_devices():
+        if self.device == 'cuda':
+            return torch.cuda.device_count()
+        elif self.device == 'xpu':
+            return intel_extension_for_pytorch.xpu.device_count()
+        else:
+            return 1
+
     def _determine_valid_devices(self):
         valid_devices = []
         if self.cuda_module_available and torch.cuda.is_available():
