@@ -5,7 +5,6 @@ import cpuinfo
 
 class TorchDeviceManager:
     def __init__(self, preferred_device=None):
-        self.xpu_module_available = self._is_module_available('torch.xpu')
         self.ipex_module_available = self._is_module_available('intel_extension_for_pytorch')
         self.mps_module_available = self._is_module_available('torch.backends.mps')
         self.cuda_module_available = self._is_module_available('torch.cuda')
@@ -21,7 +20,7 @@ class TorchDeviceManager:
 
     def _is_module_available(self, module_name):
         try:
-            __import__(module_name)
+            globals()[module_name] = __import__(module_name)
             return True
         except ImportError:
             return False
@@ -32,9 +31,9 @@ class TorchDeviceManager:
             valid_devices.append('cuda')
             for i in range(torch.cuda.device_count()):
                 valid_devices.append(f'cuda:{i}')
-        if self.xpu_module_available and self.ipex_module_available and self._is_device_valid('xpu'):
+        if self.ipex_module_available and self._is_device_valid('xpu'):
             valid_devices.append('xpu')
-            for i in range(torch.xpu.device_count()):
+            for i in range(intel_extension_for_pytorch.xpu.device_count()):
                 valid_devices.append(f'xpu:{i}')
         if self.mps_module_available and torch.backends.mps.is_available():
             valid_devices.append('mps')
@@ -51,7 +50,7 @@ class TorchDeviceManager:
     def list_devices(self):
         for valid_device in self.valid_devices:
             if 'xpu' in valid_device:
-                print(f'[{valid_device}]: {torch.xpu.get_device_properties(valid_device)}')
+                print(f'[{valid_device}]: {intel_extension_for_pytorch.xpu.get_device_properties(valid_device)}')
             elif 'cuda' in valid_device:
                 print(f'[{valid_device}]: {torch.cuda.get_device_properties(valid_device)}')
             elif valid_device == 'mps':
@@ -67,15 +66,14 @@ class TorchDeviceManager:
         if self.using_gpu():
             model = model.to(self.device)
         if self.device in ['cpu', 'xpu'] and self.ipex_module_available:
-            import intel_extension_for_pytorch as ipex
-            model = ipex.optimize(model)
+            model = intel_extension_for_pytorch.optimize(model)
         return model
 
     def synchronize(self):
         if self.device == 'cuda':
             torch.cuda.synchronize(self.device)
         elif self.device == 'xpu':
-            torch.xpu.synchronize(self.device)
+            intel_extension_for_pytorch.xpu.synchronize(self.device)
 
     def stage_data(self, data):
         if self.using_gpu():
