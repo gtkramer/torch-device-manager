@@ -31,7 +31,7 @@ class TorchDeviceManager:
             valid_devices.append('cuda')
             for i in range(torch.cuda.device_count()):
                 valid_devices.append(f'cuda:{i}')
-        if self.ipex_module_available and self._is_device_valid('xpu'):
+        if self.ipex_module_available and intel_extension_for_pytorch.xpu.is_available():
             valid_devices.append('xpu')
             for i in range(intel_extension_for_pytorch.xpu.device_count()):
                 valid_devices.append(f'xpu:{i}')
@@ -39,13 +39,6 @@ class TorchDeviceManager:
             valid_devices.append('mps')
         valid_devices.append('cpu')
         return valid_devices
-
-    def _is_device_valid(self, device_name):
-        try:
-            torch.tensor([1.0], device=device_name)
-            return True
-        except:
-            return False
 
     def list_devices(self):
         for valid_device in self.valid_devices:
