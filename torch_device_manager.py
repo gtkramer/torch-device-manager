@@ -56,7 +56,7 @@ class TorchDeviceManager:
                 print(f'[{valid_device}]: name=\'{cpu_name}\', total_memory={total_memory_mb}MB, torch_threads={num_cpu_threads}, torch_interop_threads={num_interop_threads}')
 
     def stage_model(self, model):
-        if self.using_gpu():
+        if not self.using_cpu():
             model = model.to(self.device)
         if self.device in ['cpu', 'xpu'] and self.ipex_module_available:
             model = intel_extension_for_pytorch.optimize(model)
@@ -69,12 +69,9 @@ class TorchDeviceManager:
             intel_extension_for_pytorch.xpu.synchronize(self.device)
 
     def stage_data(self, data):
-        if self.using_gpu():
+        if not self.using_cpu():
             data = data.to(self.device)
         return data
-
-    def using_gpu(self):
-        return self.device != 'cpu'
 
     def using_cpu(self):
         return self.device == 'cpu'
