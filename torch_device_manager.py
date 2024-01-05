@@ -71,6 +71,12 @@ class TorchDeviceManager:
             model = ipex.optimize(model)
         return model
 
+    def synchronize(self):
+        if self.device == 'cuda':
+            torch.cuda.synchronize(self.device)
+        elif self.device == 'xpu':
+            torch.xpu.synchronize(self.device)
+
     def stage_data(self, data):
         if self.using_gpu():
             data = data.to(self.device)
