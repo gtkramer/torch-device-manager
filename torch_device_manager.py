@@ -42,10 +42,10 @@ class TorchDeviceManager:
 
     def list_devices(self):
         for valid_device in self.valid_devices:
-            if 'xpu' in valid_device:
-                print(f'[{valid_device}]: {intel_extension_for_pytorch.xpu.get_device_properties(valid_device)}')
-            elif 'cuda' in valid_device:
+            if 'cuda' in valid_device:
                 print(f'[{valid_device}]: {torch.cuda.get_device_properties(valid_device)}')
+            elif 'xpu' in valid_device:
+                print(f'[{valid_device}]: {intel_extension_for_pytorch.xpu.get_device_properties(valid_device)}')
             elif valid_device == 'mps':
                 print(f'[{valid_device}]: On-board device')
             elif valid_device == 'cpu':
